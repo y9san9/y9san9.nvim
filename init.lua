@@ -20,6 +20,9 @@
 =====================================================================
 --]]
 
+-- Required Dependencies (the list might be incomplete)
+-- - fd: brew install fd
+
 vim.g.mapleader = ','
 vim.g.maplocalleader = ','
 
@@ -102,8 +105,6 @@ end, {
   desc = 'Open $MY[V]IMRC',
 })
 
-vim.keymap.set('n', '<leader>dmp', '<cmd>MarkdownPreviewToggle<CR>', { desc = 'Document Markdown [P]review' })
-
 vim.keymap.set('n', '<leader>le', function()
   vim.opt.iminsert = 0
 end, {
@@ -118,8 +119,6 @@ end, {
 })
 
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
-
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
@@ -155,10 +154,14 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
-require('lazy').setup({
+require('lazy').setup {
   -- My plugins
   require 'y9san9.git',
   require 'y9san9.lsp',
+  require 'y9san9.test',
+  require 'y9san9.gradle',
+  require 'y9san9.harpoon',
+  require 'y9san9.markdown',
 
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
@@ -186,9 +189,10 @@ require('lazy').setup({
         { '<leader>s', group = '[S]earch' },
         { '<leader>w', group = '[W]orkspace' },
         { '<leader>t', group = '[T]oggle' },
-        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>g', group = '[G]it Hunk', mode = { 'n', 'v' } },
         { '<leader>l', group = 'Switch [L]anguage', mode = 'n' },
         { '<leader>dm', group = 'Document [M]arkdown', mode = 'n' },
+        { '<leader>h', group = '[H]arpoon', mode = 'n' },
         { '<leader>o', group = '[O]pen', mode = 'n' },
       },
     },
@@ -226,38 +230,8 @@ require('lazy').setup({
       { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
-      -- Telescope is a fuzzy finder that comes with a lot of different things that
-      -- it can fuzzy find! It's more than just a "file finder", it can search
-      -- many different aspects of Neovim, your workspace, LSP, and more!
-      --
-      -- The easiest way to use Telescope, is to start by doing something like:
-      --  :Telescope help_tags
-      --
-      -- After running this command, a window will open up and you're able to
-      -- type in the prompt window. You'll see a list of `help_tags` options and
-      -- a corresponding preview of the help.
-      --
-      -- Two important keymaps to use while in Telescope are:
-      --  - Insert mode: <c-/>
-      --  - Normal mode: ?
-      --
-      -- This opens a window that shows you all of the keymaps for the current
-      -- Telescope picker. This is really useful to discover what Telescope can
-      -- do as well as how to actually do it!
-
-      -- [[ Configure Telescope ]]
-      -- See `:help telescope` and `:help telescope.setup()`
       local project_actions = require 'telescope._extensions.project.actions'
       require('telescope').setup {
-        -- You can put your default mappings / updates / etc. in here
-        --  All the info you're looking for is in `:help telescope.setup()`
-        --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
-        -- pickers = {}
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -267,17 +241,22 @@ require('lazy').setup({
               project_actions.change_working_directory(prompt_bufnr, false)
               require('oil').open(vim.loop.cwd())
             end,
+            cd_scope = { 'tab' },
           },
         },
       }
 
       -- Enable Telescope extensions if they are installed
+      pcall(require('telescope').load_extension, 'fzy-native')
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
       pcall(require('telescope').load_extension, 'project')
+      pcall(require('telescope').load_extension, 'fd')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
+      local utils = require 'telescope.utils'
+
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
@@ -286,8 +265,11 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
-      vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
-      vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
+      vim.keymap.set('n', '<leader>sc', builtin.resume, { desc = '[S]earch [C]ontinue' })
+      vim.keymap.set('n', '<leader>s.', function()
+        builtin.oldfiles { previewer = false }
+      end, { desc = '[S]earch Recent Files ("." for repeat)' })
+      vim.keymap.set('n', '<leader>sl', builtin.lsp_workspace_symbols, { desc = '[S]earch [L]sp Symbols' })
 
       vim.keymap.set('n', '<leader>sp', function()
         require('telescope').extensions.project.project {
@@ -321,35 +303,28 @@ require('lazy').setup({
     end,
   },
 
-  -- LSP Plugins
   {
-    -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
-    -- used for completion, annotations and signatures of Neovim apis
-    'folke/lazydev.nvim',
-    ft = 'lua',
-    opts = {
-      library = {
-        -- Load luvit types when the `vim.uv` word is found
-        { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
-      },
-    },
+    'huyvohcmc/atlas.vim',
+    config = function()
+      -- vim.cmd.colorscheme 'atlas'
+    end,
   },
 
-  -- {
-  --   'huyvohcmc/atlas.vim',
-  --   config = function()
-  --     vim.cmd.colorscheme 'atlas'
-  --   end,
-  -- },
+  {
+    'kdheepak/monochrome.nvim',
+    config = function()
+      -- vim.cmd.colorscheme 'monochrome'
+    end,
+  },
 
-  -- {
-  --   'catppuccin/nvim',
-  --   name = 'catppuccin',
-  --   config = function()
-  --     require('catppuccin').setup {}
-  --     vim.cmd.colorscheme 'catppuccin'
-  --   end,
-  -- },
+  {
+    'catppuccin/nvim',
+    name = 'catppuccin',
+    config = function()
+      require('catppuccin').setup {}
+      vim.cmd.colorscheme 'catppuccin'
+    end,
+  },
 
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
@@ -357,7 +332,7 @@ require('lazy').setup({
     'echasnovski/mini.nvim',
     config = function()
       require('mini.ai').setup { n_lines = 500 }
-      require('mini.surround').setup()
+      -- require('mini.surround').setup()
     end,
   },
 
@@ -407,15 +382,6 @@ require('lazy').setup({
     },
   },
 
-  {
-    'iamcco/markdown-preview.nvim',
-    cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
-    ft = { 'markdown' },
-    build = function(plugin)
-      vim.cmd('!cd ' .. plugin.dir .. ' && cd app && npx --yes yarn install')
-    end,
-  },
-
   -- YANDEX-specific plugins
   -- {
   --   dir = '~/arcadia/junk/moonw1nd/lua/telescope-arc.nvim',
@@ -444,27 +410,10 @@ require('lazy').setup({
   -- require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.indent_line',
   require 'kickstart.plugins.autopairs',
-}, {
-  ui = {
-    -- If you are using a Nerd Font: set icons to an empty table which will use the
-    -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
-    icons = vim.g.have_nerd_font and {} or {
-      cmd = '⌘',
-      config = '🛠',
-      event = '📅',
-      ft = '📂',
-      init = '⚙',
-      keys = '🗝',
-      plugin = '🔌',
-      runtime = '💻',
-      require = '🌙',
-      source = '📄',
-      start = '🚀',
-      task = '📌',
-      lazy = '💤 ',
-    },
+  {
+    'mbbill/undotree',
+    config = function()
+      vim.keymap.set('n', '<leader>ou', vim.cmd.UndotreeToggle, { desc = 'Open [U]ndotree' })
+    end,
   },
-})
-
--- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et
+}
