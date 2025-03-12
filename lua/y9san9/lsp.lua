@@ -29,10 +29,10 @@ return {
           end, { desc = 'Goto Next [D]iagnostic' })
           vim.keymap.set('n', '<leader>cd', function()
             vim.diagnostic.open_float()
-          end, { desc = 'LSP: [C]ode [d]iagnostic' })
+          end)
           vim.keymap.set('n', '<leader>cD', function()
             vim.diagnostic.setloclist()
-          end, { desc = 'LSP: [C]ode [D]iagnostic window' })
+          end)
 
           map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
           map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
@@ -91,6 +91,7 @@ return {
           autostart = false,
           init_options = {},
         },
+        gopls = {},
         ts_ls = {
           settings = {
             diagnostics = { ignoredCodes = { 6133 } },
@@ -99,7 +100,6 @@ return {
         eslint = {},
         pyright = {},
         rust_analyzer = {},
-        marksman = {},
         lua_ls = {
           settings = {
             Lua = {
@@ -140,7 +140,11 @@ return {
       {
         '<leader>f',
         function()
-          require('conform').format { async = true, lsp_format = 'fallback' }
+          require('conform').format {
+            async = false,
+            lsp_format = 'fallback',
+            timeout_ms = 5000,
+          }
         end,
         mode = '',
         desc = '[F]ormat buffer',
@@ -167,88 +171,74 @@ return {
     },
   },
 
-  -- {
-  --   'hrsh7th/nvim-cmp',
-  --   event = 'InsertEnter',
-  --   dependencies = {
-  --     {
-  --       'L3MON4D3/LuaSnip',
-  --       build = (function()
-  --         if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
-  --           return
-  --         end
-  --         return 'make install_jsregexp'
-  --       end)(),
-  --     },
-  --     'saadparwaiz1/cmp_luasnip',
-  --     'hrsh7th/cmp-nvim-lsp',
-  --     'hrsh7th/cmp-path',
-  --   },
-  --   config = function()
-  --     -- See `:help cmp`
-  --     local cmp = require 'cmp'
-  --     local luasnip = require 'luasnip'
-  --     luasnip.config.setup {}
-  --
-  --     cmp.setup {
-  --       snippet = {
-  --         expand = function(args)
-  --           luasnip.lsp_expand(args.body)
-  --         end,
-  --       },
-  --       completion = {
-  --         completeopt = 'menu,menuone,noinsert',
-  --         autocomplete = false,
-  --       },
-  --
-  --       mapping = cmp.mapping.preset.insert {
-  --         ['<C-n>'] = cmp.mapping.select_next_item(),
-  --         ['<C-p>'] = cmp.mapping.select_prev_item(),
-  --         ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-  --         ['<C-f>'] = cmp.mapping.scroll_docs(4),
-  --         ['<C-y>'] = cmp.mapping.confirm { select = true },
-  --         ['<C-Space>'] = cmp.mapping.complete {},
-  --         ['<C-l>'] = cmp.mapping(function()
-  --           if luasnip.expand_or_locally_jumpable() then
-  --             luasnip.expand_or_jump()
-  --           end
-  --         end, { 'i', 's' }),
-  --         ['<C-h>'] = cmp.mapping(function()
-  --           if luasnip.locally_jumpable(-1) then
-  --             luasnip.jump(-1)
-  --           end
-  --         end, { 'i', 's' }),
-  --       },
-  --       sources = {
-  --         {
-  --           name = 'lazydev',
-  --           group_index = 0,
-  --         },
-  --         { name = 'nvim_lsp' },
-  --         { name = 'luasnip' },
-  --         { name = 'path' },
-  --       },
-  --     }
-  --   end,
-  -- },
-  --
-  { -- Highlight, edit, and navigate code
-    'nvim-treesitter/nvim-treesitter',
-    build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
-    opts = {
-      auto_install = true,
-      highlight = {
-        enable = true,
-        additional_vim_regex_highlighting = { 'ruby' },
+  {
+    'hrsh7th/nvim-cmp',
+    event = 'InsertEnter',
+    dependencies = {
+      {
+        'L3MON4D3/LuaSnip',
+        build = (function()
+          if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
+            return
+          end
+          return 'make install_jsregexp'
+        end)(),
       },
-      indent = { enable = true, disable = { 'ruby' } },
+      'saadparwaiz1/cmp_luasnip',
+      'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-path',
     },
+    config = function()
+      -- See `:help cmp`
+      local cmp = require 'cmp'
+      local luasnip = require 'luasnip'
+      luasnip.config.setup {}
+
+      cmp.setup {
+        enabled = false,
+        snippet = {
+          expand = function(args)
+            luasnip.lsp_expand(args.body)
+          end,
+        },
+        -- completion = {
+        --   completeopt = 'menu,menuone,noinsert',
+        --   autocomplete = false,
+        -- },
+
+        mapping = cmp.mapping.preset.insert {
+          ['<C-n>'] = cmp.mapping.select_next_item(),
+          ['<C-p>'] = cmp.mapping.select_prev_item(),
+          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+          ['<C-f>'] = cmp.mapping.scroll_docs(4),
+          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<C-Space>'] = cmp.mapping.complete {},
+          ['<C-l>'] = cmp.mapping(function()
+            if luasnip.expand_or_locally_jumpable() then
+              luasnip.expand_or_jump()
+            end
+          end, { 'i', 's' }),
+          ['<C-h>'] = cmp.mapping(function()
+            if luasnip.locally_jumpable(-1) then
+              luasnip.jump(-1)
+            end
+          end, { 'i', 's' }),
+        },
+        sources = {
+          {
+            name = 'lazydev',
+            group_index = 0,
+          },
+          { name = 'nvim_lsp' },
+          { name = 'luasnip' },
+          { name = 'path' },
+        },
+      }
+    end,
   },
 
   {
-    -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
-    -- used for completion, annotations and signatures of Neovim apis
+    -- This is for the lua code inside of vim config
     'folke/lazydev.nvim',
     ft = 'lua',
     opts = {

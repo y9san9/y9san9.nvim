@@ -22,6 +22,8 @@
 
 -- Required Dependencies (the list might be incomplete)
 -- - fd: brew install fd
+--
+vim.g.neovide_hide_mouse_when_typing = true
 
 vim.g.mapleader = ','
 vim.g.maplocalleader = ','
@@ -30,11 +32,14 @@ vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 
+vim.opt.guicursor = 'n-v-c-i:block-Cursor'
 vim.opt.relativenumber = true
 vim.opt.mouse = 'a'
 vim.opt.showmode = false
 vim.opt.colorcolumn = '80'
-vim.cmd.set 'nohlsearch'
+vim.opt.textwidth = 80
+vim.opt.wrapmargin = 2
+vim.cmd.hlsearch = false
 
 -- Sync clipboard between OS and Neovim.
 vim.schedule(function()
@@ -84,15 +89,18 @@ vim.opt.scrolloff = 10
 
 -- [[ Basic Keymaps ]]
 
-vim.keymap.set('n', '<leader>oc', function()
-  vim.cmd.vnew()
-  vim.cmd.term()
-  vim.cmd.wincmd 'J'
-  vim.api.nvim_win_set_height(0, 10)
-end, {
-  desc = 'Open [C]onsole',
-})
+vim.keymap.set('n', 'qj', '<cmd>cnext<cr>', { desc = 'QuickFix: next' })
+vim.keymap.set('n', 'qk', '<cmd>cprev<cr>', { desc = 'QuickFix: prev' })
 
+-- vim.keymap.set('n', '<leader>oc', function()
+--   vim.cmd.vnew()
+--   vim.cmd.term()
+--   vim.cmd.wincmd 'J'
+--   vim.api.nvim_win_set_height(0, 10)
+-- end, {
+--   desc = 'Open [C]onsole',
+-- })
+--
 vim.keymap.set('n', '<leader>ot', function()
   vim.cmd.tabnew()
 end, {
@@ -155,13 +163,17 @@ end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
 require('lazy').setup {
-  -- My plugins
   require 'y9san9.git',
-  require 'y9san9.lsp',
+  -- require 'y9san9.lsp',
   require 'y9san9.test',
   require 'y9san9.gradle',
   require 'y9san9.harpoon',
   require 'y9san9.markdown',
+  -- require 'y9san9.kotlin',
+  require 'y9san9.presentation',
+  require 'y9san9.open-file-uri',
+  require 'y9san9.terminal',
+  require 'y9san9.highlighting',
 
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
@@ -169,20 +181,14 @@ require('lazy').setup {
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     opts = {
-      -- delay between pressing a key and opening which-key (milliseconds)
-      -- this setting is independent of vim.opt.timeoutlen
-      delay = 500,
+      delay = 2000,
       icons = {
-        -- set icon mappings to true if you have a Nerd Font
         mappings = vim.g.have_nerd_font,
-        -- If you are using a Nerd Font: set icons.keys to an empty table which will use the
-        -- default which-key.nvim defined Nerd Font icons, otherwise define a string table
       },
-
-      preset = 'helix',
 
       -- Document existing key chains
       spec = {
+        { 'q', group = '[Q]uickFix', mode = { 'n' } },
         { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
         { '<leader>d', group = '[D]ocument' },
         { '<leader>r', group = '[R]ename' },
@@ -194,6 +200,7 @@ require('lazy').setup {
         { '<leader>dm', group = 'Document [M]arkdown', mode = 'n' },
         { '<leader>h', group = '[H]arpoon', mode = 'n' },
         { '<leader>o', group = '[O]pen', mode = 'n' },
+        { '<leader>ck', group = '[C]ode [K]otlin', mode = 'n' },
       },
     },
   },
@@ -208,7 +215,6 @@ require('lazy').setup {
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
-    branch = '0.1.x',
     dependencies = {
       'nvim-lua/plenary.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -226,15 +232,49 @@ require('lazy').setup {
       },
       { 'nvim-telescope/telescope-ui-select.nvim' },
       { 'nvim-telescope/telescope-project.nvim' },
-      -- Useful for getting pretty icons, but requires a Nerd Font.
       { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+      { 'Marskey/telescope-sg' },
     },
     config = function()
       local project_actions = require 'telescope._extensions.project.actions'
       require('telescope').setup {
+        defaults = {
+          horizontal = {
+            prompt_position = 'top',
+          },
+          vertical = {
+            prompt_position = 'top',
+          },
+          layout_strategy = 'vertical',
+          path_display = { 'filename_first' },
+        },
+        pickers = {
+          find_files = {
+            previewer = false,
+          },
+          oldfiles = {
+            previewer = false,
+          },
+          live_grep = {
+            layout_strategy = 'vertical',
+          },
+          buffers = {
+            mappings = {
+              n = {
+                ['d'] = 'delete_buffer',
+              },
+            },
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
+          },
+          ast_grep = {
+            command = {
+              'sg',
+              '--json=stream',
+            },
           },
           project = {
             on_project_selected = function(prompt_bufnr)
@@ -255,20 +295,25 @@ require('lazy').setup {
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
-      local utils = require 'telescope.utils'
+      -- local utils = require 'telescope.utils'
 
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
-      vim.keymap.set('n', '<leader>sb', builtin.buffers, { desc = '[S]earch [B]uffers' })
+      vim.keymap.set('n', '<leader>sb', function()
+        builtin.buffers {
+          sort_lastused = true,
+        }
+      end, { desc = '[S]earch [B]uffers' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+      vim.keymap.set('n', '<leader>sa', ':Telescope ast_grep<CR>', { desc = '[S]earch by [A]st' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sc', builtin.resume, { desc = '[S]earch [C]ontinue' })
-      vim.keymap.set('n', '<leader>s.', function()
-        builtin.oldfiles { previewer = false }
-      end, { desc = '[S]earch Recent Files ("." for repeat)' })
+      vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
+      -- TODO: probably deprecate? I should start using ast-grep and not rely on
+      -- lsp for search
       vim.keymap.set('n', '<leader>sl', builtin.lsp_workspace_symbols, { desc = '[S]earch [L]sp Symbols' })
 
       vim.keymap.set('n', '<leader>sp', function()
@@ -302,6 +347,13 @@ require('lazy').setup {
       end, { desc = '[S]earch [N]eovim files' })
     end,
   },
+  { 'MattesGroeger/vim-bookmarks' },
+  {
+    'p00f/alabaster.nvim',
+    config = function()
+      -- vim.cmd.colorscheme 'alabaster'
+    end,
+  },
 
   {
     'huyvohcmc/atlas.vim',
@@ -318,11 +370,27 @@ require('lazy').setup {
   },
 
   {
+    'blazkowolf/gruber-darker.nvim',
+    config = function()
+      vim.cmd.colorscheme 'gruber-darker'
+    end,
+  },
+
+  {
     'catppuccin/nvim',
     name = 'catppuccin',
     config = function()
-      require('catppuccin').setup {}
-      vim.cmd.colorscheme 'catppuccin'
+      -- require('catppuccin').setup {
+      --   integrations = {
+      --     cmp = true,
+      --     gitsigns = true,
+      --     treesitter = true,
+      --     harpoon = true,
+      --     neotest = true,
+      --     which_key = true,
+      --   },
+      -- }
+      -- vim.cmd.colorscheme 'catppuccin'
     end,
   },
 
@@ -351,6 +419,7 @@ require('lazy').setup {
         win_options = {
           winbar = "%{v:lua.require('oil').get_current_dir()}",
         },
+        skip_confirm_for_simple_edits = true,
       }
       vim.keymap.set('n', '<leader>.', function()
         require('oil').open()
@@ -371,6 +440,9 @@ require('lazy').setup {
     'nvim-lualine/lualine.nvim',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     opts = {
+      options = {
+        theme = 'auto',
+      },
       sections = {
         lualine_a = { 'mode' },
         lualine_b = { 'branch', 'diff', 'diagnostics' },
@@ -415,5 +487,16 @@ require('lazy').setup {
     config = function()
       vim.keymap.set('n', '<leader>ou', vim.cmd.UndotreeToggle, { desc = 'Open [U]ndotree' })
     end,
+  },
+  {
+    'nvzone/typr',
+    dependencies = 'nvzone/volt',
+    opts = {},
+    cmd = { 'Typr', 'TyprStats' },
+  },
+  {
+    'Aasim-A/scrollEOF.nvim',
+    event = { 'CursorMoved', 'WinScrolled' },
+    opts = {},
   },
 }
