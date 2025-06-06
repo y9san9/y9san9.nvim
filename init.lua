@@ -34,12 +34,24 @@ vim.g.have_nerd_font = true
 
 vim.opt.guicursor = 'n-v-c-i:block-Cursor'
 vim.opt.relativenumber = true
+vim.opt.number = true
 vim.opt.mouse = 'a'
 vim.opt.showmode = false
 vim.opt.colorcolumn = '80'
 vim.opt.textwidth = 80
+vim.opt.synmaxcol = 10000
 vim.opt.wrapmargin = 2
-vim.cmd.hlsearch = false
+vim.opt.linebreak = true
+vim.opt.showtabline = 0
+
+-- avoid stupid menu.vim (saves ~100ms)
+vim.g.did_install_default_menus = 1
+-- Disable netrw
+vim.g.loaded_netrwPlugin = 0
+
+vim.wo.foldmethod = 'expr'
+vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+vim.opt.foldlevelstart = 99
 
 -- Sync clipboard between OS and Neovim.
 vim.schedule(function()
@@ -59,8 +71,8 @@ vim.opt.undofile = true
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 
--- Keep signcolumn on by default
-vim.opt.signcolumn = 'yes'
+-- Automatically resize and show up to 5 icons in gutter
+vim.opt.signcolumn = 'yes:2'
 
 -- Decrease update time
 vim.opt.updatetime = 250
@@ -84,47 +96,32 @@ vim.opt.inccommand = 'split'
 -- Show which line your cursor is on
 vim.opt.cursorline = true
 
--- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 10
-
 -- [[ Basic Keymaps ]]
 
-vim.keymap.set('n', 'qj', '<cmd>cnext<cr>', { desc = 'QuickFix: next' })
-vim.keymap.set('n', 'qk', '<cmd>cprev<cr>', { desc = 'QuickFix: prev' })
-
--- vim.keymap.set('n', '<leader>oc', function()
---   vim.cmd.vnew()
---   vim.cmd.term()
---   vim.cmd.wincmd 'J'
---   vim.api.nvim_win_set_height(0, 10)
--- end, {
---   desc = 'Open [C]onsole',
--- })
---
 vim.keymap.set('n', '<leader>ot', function()
   vim.cmd.tabnew()
 end, {
-  desc = 'Open [T]ab',
-})
+    desc = 'Open [T]ab',
+  })
 
 vim.keymap.set('n', '<leader>ov', function()
   vim.cmd.e '$MYVIMRC'
 end, {
-  desc = 'Open $MY[V]IMRC',
-})
+    desc = 'Open $MY[V]IMRC',
+  })
 
 vim.keymap.set('n', '<leader>le', function()
   vim.opt.iminsert = 0
 end, {
-  desc = 'Switch to English',
-})
+    desc = 'Switch to English',
+  })
 
 vim.keymap.set('n', '<leader>lr', function()
   vim.opt.keymap = 'russian-jcukenmac'
   vim.opt.iminsert = 1
 end, {
-  desc = 'Switch to Russian',
-})
+    desc = 'Switch to Russian',
+  })
 
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
@@ -136,11 +133,7 @@ vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
 vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
 vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
--- Keybinds to make split navigation easier.
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<space>', 'ciw')
 
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
@@ -166,7 +159,7 @@ require('lazy').setup {
   require 'y9san9.git',
   -- require 'y9san9.lsp',
   require 'y9san9.test',
-  require 'y9san9.gradle',
+  -- require 'y9san9.gradle',
   require 'y9san9.harpoon',
   require 'y9san9.markdown',
   -- require 'y9san9.kotlin',
@@ -174,6 +167,8 @@ require('lazy').setup {
   require 'y9san9.open-file-uri',
   require 'y9san9.terminal',
   require 'y9san9.highlighting',
+  require 'y9san9.statusline',
+  require 'y9san9.colorscheme',
 
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
@@ -200,7 +195,6 @@ require('lazy').setup {
         { '<leader>dm', group = 'Document [M]arkdown', mode = 'n' },
         { '<leader>h', group = '[H]arpoon', mode = 'n' },
         { '<leader>o', group = '[O]pen', mode = 'n' },
-        { '<leader>ck', group = '[C]ode [K]otlin', mode = 'n' },
       },
     },
   },
@@ -230,13 +224,17 @@ require('lazy').setup {
           return vim.fn.executable 'make' == 1
         end,
       },
+      { 'nvim-telescope/telescope-live-grep-args.nvim' },
       { 'nvim-telescope/telescope-ui-select.nvim' },
       { 'nvim-telescope/telescope-project.nvim' },
       { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
       { 'Marskey/telescope-sg' },
+      { 'xiyaowong/telescope-emoji.nvim' },
     },
     config = function()
       local project_actions = require 'telescope._extensions.project.actions'
+      local live_grep_args_actions = require 'telescope-live-grep-args.actions'
+
       require('telescope').setup {
         defaults = {
           horizontal = {
@@ -255,8 +253,11 @@ require('lazy').setup {
           oldfiles = {
             previewer = false,
           },
-          live_grep = {
+          live_grep_args = {
             layout_strategy = 'vertical',
+            additional_args = function()
+              return { '--multiline' }
+            end,
           },
           buffers = {
             mappings = {
@@ -276,6 +277,14 @@ require('lazy').setup {
               '--json=stream',
             },
           },
+          live_grep_args = {
+            auto_quoting = true,
+            mappings = {
+              i = {
+                ["<C-k>"] = live_grep_args_actions.quote_prompt(),
+              },
+            },
+          },
           project = {
             on_project_selected = function(prompt_bufnr)
               project_actions.change_working_directory(prompt_bufnr, false)
@@ -292,6 +301,8 @@ require('lazy').setup {
       pcall(require('telescope').load_extension, 'ui-select')
       pcall(require('telescope').load_extension, 'project')
       pcall(require('telescope').load_extension, 'fd')
+      pcall(require('telescope').load_extension, 'emoji')
+      pcall(require('telescope').load_extension, 'live_grep_args')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
@@ -307,14 +318,10 @@ require('lazy').setup {
         }
       end, { desc = '[S]earch [B]uffers' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-      vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
-      vim.keymap.set('n', '<leader>sa', ':Telescope ast_grep<CR>', { desc = '[S]earch by [A]st' })
+      vim.keymap.set('n', '<leader>sg', ':Telescope live_grep_args<cr>', { desc = '[S]earch by [G]rep', silent = true })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sc', builtin.resume, { desc = '[S]earch [C]ontinue' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      -- TODO: probably deprecate? I should start using ast-grep and not rely on
-      -- lsp for search
-      vim.keymap.set('n', '<leader>sl', builtin.lsp_workspace_symbols, { desc = '[S]earch [L]sp Symbols' })
 
       vim.keymap.set('n', '<leader>sp', function()
         require('telescope').extensions.project.project {
@@ -348,52 +355,6 @@ require('lazy').setup {
     end,
   },
   { 'MattesGroeger/vim-bookmarks' },
-  {
-    'p00f/alabaster.nvim',
-    config = function()
-      -- vim.cmd.colorscheme 'alabaster'
-    end,
-  },
-
-  {
-    'huyvohcmc/atlas.vim',
-    config = function()
-      -- vim.cmd.colorscheme 'atlas'
-    end,
-  },
-
-  {
-    'kdheepak/monochrome.nvim',
-    config = function()
-      -- vim.cmd.colorscheme 'monochrome'
-    end,
-  },
-
-  {
-    'blazkowolf/gruber-darker.nvim',
-    config = function()
-      vim.cmd.colorscheme 'gruber-darker'
-    end,
-  },
-
-  {
-    'catppuccin/nvim',
-    name = 'catppuccin',
-    config = function()
-      -- require('catppuccin').setup {
-      --   integrations = {
-      --     cmp = true,
-      --     gitsigns = true,
-      --     treesitter = true,
-      --     harpoon = true,
-      --     neotest = true,
-      --     which_key = true,
-      --   },
-      -- }
-      -- vim.cmd.colorscheme 'catppuccin'
-    end,
-  },
-
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
   { -- Collection of various small independent plugins/modules
@@ -419,6 +380,16 @@ require('lazy').setup {
         win_options = {
           winbar = "%{v:lua.require('oil').get_current_dir()}",
         },
+        watch_for_changes = true,
+        keymaps = {
+          ['<C-h>'] = false,
+          ['`'] = {
+            'actions.cd',
+            opts = {
+              scope = 'tab',
+            },
+          },
+        },
         skip_confirm_for_simple_edits = true,
       }
       vim.keymap.set('n', '<leader>.', function()
@@ -427,6 +398,9 @@ require('lazy').setup {
       vim.keymap.set('n', '<leader><leader>', function()
         require('oil').open(vim.loop.cwd())
       end, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>oq', function()
+        require('oil.actions').send_to_qflist.callback()
+      end, { desc = '[o]il [q]uickfix' })
     end,
   },
 
@@ -435,46 +409,6 @@ require('lazy').setup {
     event = 'VeryLazy',
     opts = {},
   },
-
-  {
-    'nvim-lualine/lualine.nvim',
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
-    opts = {
-      options = {
-        theme = 'auto',
-      },
-      sections = {
-        lualine_a = { 'mode' },
-        lualine_b = { 'branch', 'diff', 'diagnostics' },
-        lualine_c = { 'filename' },
-        lualine_x = { 'filetype' },
-        lualine_y = { 'progress' },
-        lualine_z = { 'location' },
-      },
-    },
-  },
-
-  -- YANDEX-specific plugins
-  -- {
-  --   dir = '~/arcadia/junk/moonw1nd/lua/telescope-arc.nvim',
-  --   config = function()
-  --     require('telescope').load_extension 'arc'
-  --     vim.api.nvim_create_autocmd({'BufRead', 'BufNewFile'}, {
-  --       pattern = '~/arcadia/*',
-  --       desc = 'Activate under yandex folder',
-  --       group = vim.api.nvim_create_augroup('yandex-telescope', { clear = true }),
-  --       callback = function()
-  --         print("SET TEST")
-  --         vim.keymap.set('n', '<leader>oap', function ()
-  --           require("telescope").extensions.arc.pr_list({
-  --             flags = {"-i", "--shipper", "!moonw1nd"},
-  --             prompt_title = "arc pr list"
-  --           })
-  --         end, { desc = 'Open Arcadia [P]ull Requests' })
-  --       end,
-  --     })
-  --   end,
-  -- },
 
   -- Kickstart Plugins
   -- require 'kickstart.plugins.debug',

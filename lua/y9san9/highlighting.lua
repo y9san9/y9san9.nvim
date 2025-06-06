@@ -3,7 +3,7 @@ return {
   build = ':TSUpdate',
   main = 'nvim-treesitter.configs',
   dependencies = {
-    'nvim-treesitter/nvim-treesitter-context',
+    -- 'nvim-treesitter/nvim-treesitter-context',
   },
   opts = {
     auto_install = true,
@@ -13,7 +13,7 @@ return {
     },
     indent = {
       enable = true,
-      disable = { 'ruby', 'kotlin' }
+      disable = { 'ruby', 'kotlin' },
     },
   },
 }
