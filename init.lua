@@ -169,6 +169,7 @@ require('lazy').setup {
   require 'y9san9.highlighting',
   require 'y9san9.statusline',
   require 'y9san9.colorscheme',
+  -- require 'y9san9.autocomplete',
 
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
@@ -409,6 +410,8 @@ require('lazy').setup {
     event = 'VeryLazy',
     opts = {},
   },
+
+  { 'editorconfig/editorconfig-vim' },
 
   -- Kickstart Plugins
   -- require 'kickstart.plugins.debug',

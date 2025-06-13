@@ -8,15 +8,13 @@ return {
       { 'j-hui/fidget.nvim', opts = {} },
     },
     config = function()
-      -- FIXME: remove this LSP
-
-      vim.lsp.config['kotlin-ls'] = {
-        cmd = { "/Users/y9san9/Desktop/kotlin-lsp/kotlin-lsp.sh", "--stdio" },
-        single_file_support = true,
-        filetypes = { "kotlin" },
-        root_markers = { "build.gradle", "build.gradle.kts", "pom.xml" },
-      }
-      vim.lsp.enable("kotlin-ls")
+      -- vim.lsp.config['kotlin-ls'] = {
+      --   cmd = { "/Users/y9san9/Desktop/kotlin-lsp/kotlin-lsp.sh", "--stdio" },
+      --   single_file_support = true,
+      --   filetypes = { "kotlin" },
+      --   root_markers = { "build.gradle", "build.gradle.kts", "pom.xml" },
+      -- }
+      -- vim.lsp.enable("kotlin-ls")
 
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
