@@ -16,18 +16,15 @@ return {
         },
         columns = {
             "icon",
-            "permissions",
+            -- "permissions",
             "size",
             "mtime",
         },
         delete_to_trash = true,
-        watchForChanges = true,
+        -- watchForChanges = true,
         skip_confirm_for_simple_edits = true,
-        buf_options = {
-            buflisted = true,
-        },
     },
     keys = {
-        { "<leader><leader>", ":Oil<CR>" },
+        { "<leader><leader>", ":Oil<CR>", silent = true },
     },
 }

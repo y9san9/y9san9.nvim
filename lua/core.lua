@@ -8,6 +8,10 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.signcolumn = "yes:1"
 vim.opt.colorcolumn = "80"
+vim.opt.completeopt = "menu,menuone,fuzzy,noinsert"
+vim.opt.swapfile = false
+vim.opt.exrc = true
+vim.opt.wildoptions:append { 'fuzzy' }
 
 vim.api.nvim_create_autocmd("TextYankPost", {
     callback = function()
