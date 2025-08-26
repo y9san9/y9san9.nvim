@@ -3,7 +3,6 @@
 vim.g.mapleader = ","
 vim.opt.number = true
 vim.opt.relativenumber = true
--- vim.opt.guifont = "JetBrainsMono Nerd Font"
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.signcolumn = "yes:1"
@@ -13,6 +12,9 @@ vim.opt.swapfile = false
 vim.opt.confirm = true
 vim.opt.wildoptions:append { 'fuzzy' }
 vim.opt.path:append { '**' } -- todo: figure out what it does
+
+-- Only highlight with treesitter
+vim.cmd("syntax off")
 
 vim.api.nvim_create_autocmd("TextYankPost", {
     callback = function()
