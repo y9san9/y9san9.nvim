@@ -3,7 +3,7 @@ vim.pack.add {
 }
 
 vim.api.nvim_create_autocmd('FileType', {
-    pattern = 'fugitive',
+    pattern = { 'fugitive', 'git' },
     callback = function()
         vim.cmd("syntax on")
     end

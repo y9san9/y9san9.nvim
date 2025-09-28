@@ -1,5 +1,5 @@
 vim.pack.add {
-    'https://github.com/stevearc/oil.nvim',
+    "https://github.com/stevearc/oil.nvim",
 }
 
 require("oil").setup {
@@ -16,7 +16,7 @@ require("oil").setup {
         ["<C-,>"] = false,
     },
     columns = {
-        "icon",
+        -- "icon",
         -- "permissions",
         "size",
         "mtime",
@@ -26,4 +26,4 @@ require("oil").setup {
     skip_confirm_for_simple_edits = true,
 }
 
-vim.keymap.set('n', '<leader><leader>', ':Oil<CR>', { silent = true })
+vim.keymap.set("n", "<leader><leader>", ":Oil<CR>", { silent = true })

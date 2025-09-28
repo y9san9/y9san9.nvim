@@ -9,3 +9,5 @@ require("telescope").setup {
         layout_strategy = "vertical",
     },
 }
+
+vim.keymap.set("n", "<leader>.", ":Telescope<CR>", { silent = true })

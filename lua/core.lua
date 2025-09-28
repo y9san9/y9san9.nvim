@@ -11,7 +11,7 @@ vim.opt.completeopt = "menu,menuone,fuzzy,noinsert"
 vim.opt.swapfile = false
 vim.opt.confirm = true
 vim.opt.wildoptions:append { 'fuzzy' }
-vim.opt.path:append { '**' } -- todo: figure out what it does
+vim.opt.path:append { '**' }
 
 -- Only highlight with treesitter
 vim.cmd("syntax off")
