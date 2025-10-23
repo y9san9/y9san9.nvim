@@ -7,6 +7,15 @@ require("telescope").setup {
     defaults = {
         path_display = { "filename_first" },
         layout_strategy = "vertical",
+        vimgrep_arguments = {
+            "rg",
+            "--color=never",
+            "--no-heading",
+            "--with-filename",
+            "--line-number",
+            "--column",
+            "--smart-case",
+        },
     },
 }
 

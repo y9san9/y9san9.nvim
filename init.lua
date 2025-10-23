@@ -10,4 +10,5 @@ require("plugins.nvim-treesitter")
 require("plugins.oil")
 require("plugins.telescope")
 require("plugins.wakatime")
+require("plugins.themes")
 

@@ -1,9 +1,12 @@
 local M = {}
 
 M.attach_terminal = function(options)
+    local options = options or {}
     vim.cmd.terminal()
     vim.fn.feedkeys("i")
-    vim.fn.feedkeys(options.command)
+    if options.command ~= nil then
+        vim.fn.feedkeys(options.command)
+    end
     vim.fn.feedkeys("\n")
     vim.fn.feedkeys("")
     vim.fn.feedkeys("G")
