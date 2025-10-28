@@ -16,10 +16,10 @@ vim.opt.wildoptions:append { 'fuzzy' }
 vim.opt.path:append { '**' }
 vim.opt.scrolloff = 999
 vim.opt.smoothscroll = true
-
 vim.opt.grepprg = "rg --vimgrep --no-messages --smart-case"
-
 vim.opt.statusline = "[%n] %<%f %h%w%m%r%=%-14.(%l,%c%V%) %P"
+
+vim.cmd.colorscheme('habamax')
 
 -- Only highlight with treesitter
 vim.cmd("syntax off")
@@ -30,4 +30,3 @@ vim.api.nvim_create_autocmd("TextYankPost", {
     end,
 })
 
-vim.cmd.colorscheme('habamax')

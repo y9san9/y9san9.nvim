@@ -1,8 +1,6 @@
 local M = {}
 
 M.make = function(options)
-    local kotlin = "%A%t: file://%f:%l:%c %m"
-    local ignoreUnknown = "%-G%.%#"
     vim.opt.makeprg = options.command
     vim.opt.errorformat = {
         -- Error with file location (start of multiline)
