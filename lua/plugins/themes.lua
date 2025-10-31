@@ -3,6 +3,4 @@ vim.pack.add {
     "https://github.com/y9san9/y9nika.nvim",
 }
 
--- vim.cmd.colorscheme('catppuccin')
-vim.cmd.colorscheme('y9nika')
-vim.opt.background = 'light'
+vim.cmd.colorscheme("y9nika")

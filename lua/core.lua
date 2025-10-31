@@ -19,7 +19,10 @@ vim.opt.smoothscroll = true
 vim.opt.grepprg = "rg --vimgrep --no-messages --smart-case"
 vim.opt.statusline = "[%n] %<%f %h%w%m%r%=%-14.(%l,%c%V%) %P"
 
-vim.cmd.colorscheme('habamax')
+-- Two weeks phase again?
+-- vim.opt.guifont = "Monocraft Nerd Font"
+
+vim.opt.guifont = "Iosevka"
 
 -- Only highlight with treesitter
 vim.cmd("syntax off")
