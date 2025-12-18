@@ -19,6 +19,11 @@ vim.opt.smoothscroll = true
 vim.opt.grepprg = "rg --vimgrep --no-messages --smart-case"
 vim.opt.statusline = "[%n] %<%f %h%w%m%r%=%-14.(%l,%c%V%) %P"
 
+vim.cmd [[
+  aunmenu PopUp
+  autocmd! nvim.popupmenu
+]]
+
 -- Two weeks phase again?
 -- vim.opt.guifont = "Monocraft Nerd Font"
 
@@ -26,6 +31,11 @@ vim.opt.guifont = "Iosevka"
 
 -- Only highlight with treesitter
 vim.cmd("syntax off")
+
+-- Builtin
+vim.cmd.packadd("cfilter")
+vim.cmd.packadd("nvim.undotree")
+vim.cmd.packadd("nvim.difftool")
 
 vim.api.nvim_create_autocmd("TextYankPost", {
     callback = function()

@@ -1,3 +1,4 @@
+--- spoiler: I am getting rid of it and moving to ghostty
 vim.g.neovide_hide_mouse_when_typing = true
 vim.g.neovide_scroll_animation_length = 0
 
