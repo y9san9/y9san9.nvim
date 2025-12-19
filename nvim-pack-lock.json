@@ -5,13 +5,12 @@
       "src": "https://github.com/catppuccin/nvim"
     },
     "nvim-lspconfig": {
-      "rev": "f3979663c9c8cd9ad258344b9cfb5ad83cff61c1",
+      "rev": "c4f67bf85b01a57e3c130352c0a0e453ab8cd5b9",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-treesitter": {
-      "rev": "d3218d988f72ed34414959c9ccd802d393432d6e",
-      "src": "https://github.com/nvim-treesitter/nvim-treesitter",
-      "version": "'main'"
+      "rev": "4fc09bee78e91bf4ba471cdab4bf9dfa37fde51c",
+      "src": "https://github.com/nvim-treesitter/nvim-treesitter"
     },
     "oil.nvim": {
       "rev": "cbcb3f997f6f261c577b943ec94e4ef55108dd95",
@@ -22,7 +21,7 @@
       "src": "https://github.com/wakatime/vim-wakatime"
     },
     "y9nika.nvim": {
-      "rev": "15955d03f1e03a70313380ae849576e972036932",
+      "rev": "94b9826cf910ea7bd9d1af5749c8a082f25e8b61",
       "src": "https://github.com/y9san9/y9nika.nvim"
     }
   }

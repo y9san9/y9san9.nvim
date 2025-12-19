@@ -4,16 +4,16 @@ M.make = function(options)
     vim.opt.makeprg = options.command
     vim.opt.errorformat = {
         -- Error with file location (start of multiline)
-        "%E%t: file://%f:%l:%c %m",
+        '%E%t: file://%f:%l:%c %m',
         -- More specific continuation patterns for abstract member declarations
-        "%Csuspend fun %m",
-        "%Cfun %m(",
+        '%Csuspend fun %m',
+        '%Cfun %m(',
         -- Continuation lines for the error message
-        "%C%m",
+        '%C%m',
         -- End of multiline message (empty line or new error)
-        "%Z",
+        '%Z',
         -- Ignore unknown lines
-        "%-G%.%#"
+        '%-G%.%#'
     }
     vim.cmd.make()
 end

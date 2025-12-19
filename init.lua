@@ -1,24 +1,83 @@
-require("core")
-require("args")
+vim.pack.add {
+    'https://github.com/nvim-treesitter/nvim-treesitter',
+    'https://github.com/neovim/nvim-lspconfig',
+    'https://github.com/stevearc/oil.nvim',
+    'https://github.com/y9san9/y9nika.nvim',
+    'https://github.com/wakatime/vim-wakatime',
+}
 
-if vim.g.neovide then
-    require("neovide")
-end
+vim.cmd.packadd('cfilter')
+vim.cmd.packadd('nvim.undotree')
+vim.cmd.packadd('nvim.difftool')
 
--- Almost builtin
-require("plugins.nvim-treesitter")
+vim.g.mapleader = ','
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.colorcolumn = '80'
+vim.opt.textwidth = 80
+vim.opt.completeopt = 'menu,menuone,fuzzy,noinsert'
+vim.opt.swapfile = false
+vim.opt.confirm = true
+vim.opt.linebreak = true
+vim.opt.wildoptions:append { 'fuzzy' }
+vim.opt.path:append { '**' }
+vim.opt.scrolloff = 999
+vim.opt.smoothscroll = true
+vim.opt.grepprg = 'rg --vimgrep --no-messages --smart-case'
+vim.opt.statusline = '[%n] %<%f %h%w%m%r%=%-14.(%l,%c%V%) %P'
 
--- My own theme
-require("plugins.themes")
+vim.cmd.colorscheme('y9nika')
 
--- Just tracker
-require("plugins.wakatime")
+-- disable mouse popup yet keep mouse enabled
+vim.cmd [[
+  aunmenu PopUp
+  autocmd! nvim.popupmenu
+]]
 
--- Can't get rid of oil until we have a builtin file manager:
--- https://github.com/neovim/neovim/discussions/36324
-require("plugins.oil")
+-- Only highlight with treesitter
+vim.cmd('syntax off')
 
--- I want to get rid of this at some point of time
--- require("plugins.harpoon")
--- require("plugins.fugitive")
--- require("plugins.telescope")
+require('oil').setup {
+    keymaps = { ['`'] = 'actions.tcd' },
+    columns = { 'size', 'mtime' },
+    delete_to_trash = true,
+    skip_confirm_for_simple_edits = true,
+}
+
+-- Keymaps
+
+vim.keymap.set('n', '<leader><leader>', ':Oil<CR>', { silent = true })
+
+vim.keymap.set('n', '<leader>a', function()
+    vim.cmd('$argadd %')
+    vim.cmd('argdedup')
+end)
+vim.keymap.set('n', '<C-h>', function() vim.cmd('silent! 1argument') end)
+vim.keymap.set('n', '<C-j>', function() vim.cmd('silent! 2argument') end)
+vim.keymap.set('n', '<C-k>', function() vim.cmd('silent! 3argument') end)
+vim.keymap.set('n', '<C-n>', function() vim.cmd('silent! 4argument') end)
+vim.keymap.set('n', '<C-m>', function() vim.cmd('silent! 5argument') end)
+
+-- Autocommands
+
+vim.api.nvim_create_autocmd('FileType', {
+    callback = function() pcall(vim.treesitter.start) end,
+})
+
+vim.api.nvim_create_autocmd('LspAttach', {
+    callback = function(args)
+        vim.o.signcolumn = 'yes:1'
+        local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
+        if client:supports_method('textDocument/completion') then
+            vim.o.complete = 'o,.,w,b,u'
+            vim.o.completeopt = 'menu,menuone,popup,noinsert'
+            vim.lsp.completion.enable(true, client.id, args.buf)
+        end
+    end
+})
+
+vim.api.nvim_create_autocmd('TextYankPost', {
+    callback = function() vim.highlight.on_yank() end,
+})
