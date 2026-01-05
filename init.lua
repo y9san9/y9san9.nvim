@@ -4,6 +4,7 @@ vim.pack.add {
     'https://github.com/stevearc/oil.nvim',
     'https://github.com/y9san9/y9nika.nvim',
     'https://github.com/wakatime/vim-wakatime',
+    'https://github.com/brenoprata10/nvim-highlight-colors',
 }
 
 vim.cmd.packadd('cfilter')
@@ -21,9 +22,9 @@ vim.opt.completeopt = 'menu,menuone,fuzzy,noinsert'
 vim.opt.swapfile = false
 vim.opt.confirm = true
 vim.opt.linebreak = true
+vim.opt.termguicolors = true
 vim.opt.wildoptions:append { 'fuzzy' }
 vim.opt.path:append { '**' }
-vim.opt.scrolloff = 999
 vim.opt.smoothscroll = true
 vim.opt.grepprg = 'rg --vimgrep --no-messages --smart-case'
 vim.opt.statusline = '[%n] %<%f %h%w%m%r%=%-14.(%l,%c%V%) %P'
@@ -39,8 +40,13 @@ vim.cmd [[
 -- Only highlight with treesitter
 vim.cmd('syntax off')
 
+require("nvim-highlight-colors").setup {
+    render = 'virtual',
+    virtual_symbol = '⚫︎',
+    virtual_symbol_suffix = '',
+}
 require('oil').setup {
-    keymaps = { ['`'] = 'actions.tcd' },
+    keymaps = { ['<C-h>'] = false },
     columns = { 'size', 'mtime' },
     delete_to_trash = true,
     skip_confirm_for_simple_edits = true,
