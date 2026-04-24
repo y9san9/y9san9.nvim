@@ -4,7 +4,7 @@ vim.pack.add {
     'https://github.com/stevearc/oil.nvim',
     'https://github.com/y9san9/y9nika.nvim',
     'https://github.com/wakatime/vim-wakatime',
-    'https://github.com/brenoprata10/nvim-highlight-colors',
+    'https://github.com/vyfor/cord.nvim',
 }
 
 vim.cmd.packadd('cfilter')
@@ -12,6 +12,7 @@ vim.cmd.packadd('nvim.undotree')
 vim.cmd.packadd('nvim.difftool')
 
 vim.g.mapleader = ','
+vim.opt.exrc = true
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.ignorecase = true
@@ -24,10 +25,16 @@ vim.opt.confirm = true
 vim.opt.linebreak = true
 vim.opt.termguicolors = true
 vim.opt.wildoptions:append { 'fuzzy' }
+vim.opt.nrformats:append { 'blank', 'alpha' }
 vim.opt.path:append { '**' }
 vim.opt.smoothscroll = true
 vim.opt.grepprg = 'rg --vimgrep --no-messages --smart-case'
 vim.opt.statusline = '[%n] %<%f %h%w%m%r%=%-14.(%l,%c%V%) %P'
+vim.opt.foldlevel = 999
+vim.opt.foldmethod = 'expr'
+vim.opt.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+vim.opt.guifont = 'Iosevka:h35'
+vim.opt.tabstop = 4
 
 vim.cmd.colorscheme('y9nika')
 
@@ -40,11 +47,6 @@ vim.cmd [[
 -- Only highlight with treesitter
 vim.cmd('syntax off')
 
-require("nvim-highlight-colors").setup {
-    render = 'virtual',
-    virtual_symbol = '⚫︎',
-    virtual_symbol_suffix = '',
-}
 require('oil').setup {
     keymaps = { ['<C-h>'] = false },
     columns = { 'size', 'mtime' },
@@ -53,7 +55,6 @@ require('oil').setup {
 }
 
 -- Keymaps
-
 vim.keymap.set('n', '<leader><leader>', ':Oil<CR>', { silent = true })
 
 vim.keymap.set('n', '<leader>a', function()
@@ -67,7 +68,6 @@ vim.keymap.set('n', '<C-n>', function() vim.cmd('silent! 4argument') end)
 vim.keymap.set('n', '<C-m>', function() vim.cmd('silent! 5argument') end)
 
 -- Autocommands
-
 vim.api.nvim_create_autocmd('FileType', {
     callback = function() pcall(vim.treesitter.start) end,
 })

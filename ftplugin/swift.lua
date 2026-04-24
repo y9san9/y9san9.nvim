@@ -1,1 +1,1 @@
-vim.opt_local.suffixesadd:append { '.swift' }
+vim.bo.suffixesadd:append { '.swift' }
