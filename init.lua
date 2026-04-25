@@ -11,6 +11,17 @@ vim.cmd.packadd('cfilter')
 vim.cmd.packadd('nvim.undotree')
 vim.cmd.packadd('nvim.difftool')
 
+require('vim._core.ui2').enable {
+    msg = {
+        target = 'msg',
+        msg = {
+            height = 0.0001,
+            width = 1,
+            timeout = 2000,
+        },
+    }
+}
+
 vim.g.mapleader = ','
 vim.opt.exrc = true
 vim.opt.number = true
