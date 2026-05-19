@@ -13,12 +13,8 @@ vim.cmd.packadd('nvim.difftool')
 
 require('vim._core.ui2').enable {
     msg = {
-        target = 'msg',
-        msg = {
-            height = 0.0001,
-            width = 1,
-            timeout = 2000,
-        },
+        target = 'cmd',
+        cmd = { height = 1 }
     }
 }
 
@@ -44,7 +40,6 @@ vim.opt.statusline = '[%n] %<%f %h%w%m%r%=%-14.(%l,%c%V%) %P'
 vim.opt.foldlevel = 999
 vim.opt.foldmethod = 'expr'
 vim.opt.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-vim.opt.guifont = 'Iosevka:h35'
 vim.opt.tabstop = 4
 
 vim.cmd.colorscheme('y9nika')
@@ -96,5 +91,5 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 vim.api.nvim_create_autocmd('TextYankPost', {
-    callback = function() vim.highlight.on_yank() end,
+    callback = function() vim.highlight.hl_op() end,
 })
