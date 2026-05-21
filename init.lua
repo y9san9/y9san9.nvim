@@ -10,6 +10,7 @@ vim.pack.add {
 vim.cmd.packadd('cfilter')
 vim.cmd.packadd('nvim.undotree')
 vim.cmd.packadd('nvim.difftool')
+require("tagx")
 
 require('vim._core.ui2').enable {
     msg = {
